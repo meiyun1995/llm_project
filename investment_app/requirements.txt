@@ -5,3 +5,5 @@ pycryptodome
 langchain
 openai
 streamlit
+protobuf==3.20.1
+sentence_transformers
