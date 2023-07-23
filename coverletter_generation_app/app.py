@@ -29,17 +29,8 @@ Develop a cover letter in a professional tone for a {prompt},
 highlighting my accomplishments and how you can contribute to the company's goals.
 """
 
-# prompt = PromptTemplate(
-#     input_variables=["position_title"], 
-#     template=prompt_template
-#     )
-
-# prompt.format(position_title=position_title)
-
-# chain_type_kwargs = {"prompt": prompt}
-# Process the annual report you wish to analyse
-
 if prompt:
+    # Process the annual report you wish to analyse
     st.header('Single File Upload')
     uploaded_file = st.file_uploader('Upload a file',
                                     accept_multiple_files=False, 
@@ -69,10 +60,8 @@ if prompt:
             llm=llm,
             chain_type="stuff",
             retriever=db.as_retriever(search_kwargs={"k": 3}),
-            # chain_type_kwargs =chain_type_kwargs,
             return_source_documents=True,
-            verbose=False,
-            
+            verbose=False,   
         )
 
         response = qa(prompt_template)
