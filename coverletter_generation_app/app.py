@@ -21,24 +21,25 @@ embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 st.title('Generate Cover letter')
 
-prompt_template = """
-Develop a cover letter in a professional tone for a {position_title},
+
+prompt = st.text_input('What is the title of the job and company you wish to apply for?')
+
+prompt_template = f"""
+Develop a cover letter in a professional tone for a {prompt},
 highlighting my accomplishments and how you can contribute to the company's goals.
 """
 
-position_title = st.text_input('What is the title of the job and company you wish to apply for?')
+# prompt = PromptTemplate(
+#     input_variables=["position_title"], 
+#     template=prompt_template
+#     )
 
-prompt = PromptTemplate(
-    input_variables=["position_title"], 
-    template=prompt_template
-    )
+# prompt.format(position_title=position_title)
 
-prompt.format(position_title=position_title)
-
-chain_type_kwargs = {"prompt": prompt}
+# chain_type_kwargs = {"prompt": prompt}
 # Process the annual report you wish to analyse
 
-if position_title:
+if prompt:
     st.header('Single File Upload')
     uploaded_file = st.file_uploader('Upload a file',
                                     accept_multiple_files=False, 
@@ -68,12 +69,11 @@ if position_title:
             llm=llm,
             chain_type="stuff",
             retriever=db.as_retriever(search_kwargs={"k": 3}),
-            chain_type_kwargs =chain_type_kwargs,
+            # chain_type_kwargs =chain_type_kwargs,
             return_source_documents=True,
             verbose=False,
             
         )
 
-        if position_title:
-            response = qa({'position_title':position_title})
-            st.write(response['result']) 
+        response = qa(prompt_template)
+        st.write(response['result']) 
