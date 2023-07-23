@@ -6,13 +6,14 @@ import streamlit as st
 from langchain.llms import GPT4All
 from langchain.embeddings import HuggingFaceEmbeddings
 
+from langchain import PromptTemplate
 from langchain.document_loaders import PyPDFLoader
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 
 # Local dir to downloaded GPT4All models https://gpt4all.io/index.html
-PATH = '/Users/chuameiyun/gpt4all/ggml-model-gpt4all-falcon-q4_0.bin'
+PATH = './gpt4all/ggml-model-gpt4all-falcon-q4_0.bin'
 
 # Init LLM model and embedding
 llm = GPT4All(model=PATH, verbose=True)
@@ -46,17 +47,33 @@ if uploaded_file:
     # Vector store
     db = Chroma.from_documents(texts, embeddings, collection_name='resume', persist_directory='db')
 
+    prompt_template = """
+    Develop a cover letter in a professional tone for a {position_title} position at {company_name},\n
+    highlighting my accomplishments and how you can contribute to the company's goals.
+    """
+
+    position_title = st.text_input('What is the title of the job?')
+    company_name = st.text_input("What is the company's name")
+
+    prompt = PromptTemplate(
+        input_variables=["position_title", "company_name"], 
+        template=prompt_template
+        )
+    
+    prompt.format(position_title=position_title, company_name=company_name)
+    
+    chain_type_kwargs = {"prompt": prompt}
+
     qa = RetrievalQA.from_chain_type(
         llm=llm,
         chain_type="stuff",
         retriever=db.as_retriever(search_kwargs={"k": 3}),
+        chain_type_kwargs =chain_type_kwargs,
         return_source_documents=True,
         verbose=False,
+        
     )
 
-    prompt = st.text_input('Input your prompt here')
-
-    if prompt:
+    if position_title and company_name:
         response = qa(prompt)
-
-        st.write(response['result'])
+        st.write(response['result']) 
